@@ -1,0 +1,10 @@
+﻿[TTD] TurretTargetDetect by Chaos02
+	Turns on and off a terminal group based on if turrets have targets or are controlled by a player.
+
+	Setup:
+		To use the scipt, place it on your grid and define two Block groups in your terminal:
+			1. One that will be turned on/off and 
+			2. One, having turrets in it, that should control wether the first group will be on or off.
+
+		The Name of the first group will contain the Keyword (below \/)
+		The Name of the second group will contain the Keyword, a space and "SW" in it. Example: "[TTD] SW"
