@@ -63,6 +63,7 @@ namespace IngameScript {
 
 		List<IMyTerminalBlock> SwitchGroup = new List<IMyTerminalBlock>();
 		List<IMyLargeTurretBase> TurretGroup = new List<IMyLargeTurretBase>();
+		List<IMyTurretControlBlock> CustomTurretGroup = new List<IMyTurretControlBlock>();
 		bool SoundIsPlaying = false;
 
 
@@ -87,7 +88,6 @@ namespace IngameScript {
 
 			Runtime.UpdateFrequency = UpdateFrequency.Update10 | UpdateFrequency.Update100;
 
-
 			GetTargets();
 
 		}
@@ -104,6 +104,7 @@ namespace IngameScript {
 		void GetTargets() {
 			SwitchGroup.Clear();
 			TurretGroup.Clear();
+			CustomTurretGroup.Clear();
 
 			List<IMyBlockGroup> groups = new List<IMyBlockGroup>();
 			GridTerminalSystem.GetBlockGroups(groups);
@@ -111,12 +112,16 @@ namespace IngameScript {
 				foreach (var group in groups) {
 					if (group.Name.Contains(Keyword) && !group.Name.Contains(Keyword + " SW")) {
 						List<IMyLargeTurretBase> groupBlocks = new List<IMyLargeTurretBase>();
+						List<IMyTurretControlBlock> groupCustomBlocks = new List<IMyTurretControlBlock>();
 						group.GetBlocksOfType(groupBlocks);
+						group.GetBlocksOfType(groupCustomBlocks);
 						TurretGroup.AddList(groupBlocks);
+						CustomTurretGroup.AddList(groupCustomBlocks);
 					}
 				}
 			} else {
 				GridTerminalSystem.GetBlocksOfType(TurretGroup, x => x.CustomName.Contains(Keyword));
+				GridTerminalSystem.GetBlocksOfType(CustomTurretGroup, x => x.CustomName.Contains(Keyword));
 			}
 
 			foreach (var group in groups) {
@@ -137,8 +142,18 @@ namespace IngameScript {
 					if (TurnOn)
 						break;
 				}
+				foreach (var turr in CustomTurretGroup) {
+					TurnOn = TurnOn || turr.HasTarget || turr.IsUnderControl;
+					if (TurnOn)
+						break;
+				}
 			} else {
 				foreach (var turr in TurretGroup) {
+					TurnOn = TurnOn || turr.HasTarget;
+					if (TurnOn)
+						break;
+				}
+				foreach (var turr in CustomTurretGroup) {
 					TurnOn = TurnOn || turr.HasTarget;
 					if (TurnOn)
 						break;
@@ -193,7 +208,7 @@ namespace IngameScript {
 				GetTargets();
 			}
 
-				StatusMessage = $"{SwitchGroup.Count} to switch, {TurretGroup.Count} to check.";
+			StatusMessage = $"{SwitchGroup.Count} to switch, {TurretGroup.Count + CustomTurretGroup.Count} to check, {CustomTurretGroup.Count} of which custom.";
 
 			StatusHeader = $"{StatusSpinner[StatusSpinnerC]} [TTD] TurretTargetDetect\n";
 			StatusHeader += $"Keyword: {Keyword}\n";
